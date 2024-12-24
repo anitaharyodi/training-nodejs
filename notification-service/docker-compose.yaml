@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${USER_DB}
+      POSTGRES_PASSWORD: ${PASS_DB}
+      POSTGRES_DB: ${NAME_DB}
+    ports:
+      - "5435:5432"
+    volumes:
+      - notif-data:/var/lib/postgresql/data
+    networks:
+      - backend
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+    networks:
+      - backend
+  kafka:
+    image: wurstmeister/kafka:2.11-1.1.1
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: ${HOST_IP}
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_CREATE_TOPICS: "project-changes:1:1, task-changes:1:1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - backend
+volumes:
+  notif-data:
+networks:
+  backend:
+    driver: bridge

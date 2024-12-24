@@ -1,0 +1,14 @@
+generator client {
+  provider         = "prisma-client-js"
+  output           = "../generated/notification"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("NOTIF_DATABASE_URL")
+}
+
+model mst_notif {
+  id             Int      @id @default(autoincrement())
+  notif_name     String   @db.VarChar(255)
+}
